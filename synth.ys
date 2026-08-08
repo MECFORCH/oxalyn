@@ -1,0 +1,12 @@
+# Oxalyn-16 CPU — Yosys Sentez Scripti
+# Çalıştır: yosys synth.ys
+
+read_verilog cpu_synth.v
+hierarchy -check -top oxalyn6_cpu
+synth -top oxalyn6_cpu -flatten
+opt -full
+opt_clean -purge
+abc -g cmos2
+opt_clean -purge
+stat
+write_verilog -ooattr oxalyn_netlist.v

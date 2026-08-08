@@ -1,0 +1,11 @@
+- [Native compiler unit mode](compiler-unit-mode.md) — main-less kernel modules use explicit unit compilation; executable tests retain the default main contract.
+﻿- [Oxalyn-64 migration decisions](oxalyn-migration.md) — 64-bit veri yolu geçişinde kritik kararlar ve tuzaklar
+- [Compiler architecture](compiler-architecture.md) — mimari algılama, güvenli kaynak alt kümesi ve binary decoder sınırı
+- [Toolchain output safety](toolchain-output-safety.md) — host ELF çıktıları Oxalyn binary'si değildir; gerçek backend olmadan paketlenmez
+- [Oxalyn binary format](binary-format.md) — `.bin` komut kelimeleri big-endian 32-bit olarak saklanır
+- [GUI framebuffer presentation](gui-framebuffer.md) — host capture uses RGBA8 at gpu_present; simulator GUI owns live refresh
+- [Host kernel entry](host-kernel-entry.md) — host stdio/file capture requires normal libc startup before kernel_main
+- [GUI isolation guard](gui-isolation.md) — validate untrusted drawing and quarantine GUI without stopping kernel services
+- [Kernel GPU wire contract](gpu-wire-contract.md) — shared freestanding packet constants, PID attribution, and the hardware ring validation boundary
+- [WASM kernel image limit](wasm-kernel-image-limit.md) — real boot-linked `.bin` exists, but the current kernel exceeds the 65,536-word physical image limit
+- [Tile rasterizer](tile-rasterizer.md) — parallel software rendering owns disjoint tiles while preserving per-tile draw order

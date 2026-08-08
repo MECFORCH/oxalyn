@@ -1,0 +1,1 @@
+; Yeni test yazmak için bu dosyayı kopyala.
