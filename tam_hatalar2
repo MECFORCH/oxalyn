@@ -1,0 +1,50 @@
+╚════════════════════════════════════════════╝
+┌────────────────────────────────────┐
+│   Gravityon GPU Simülatör İstatistik │
+├────────────────────────────────────┤
+│ Frameler       :          0         │
+│ Üçgenler       :          0         │
+│ Piksel yazma   :          0         │
+│ Shader çağrısı :          0         │
+└────────────────────────────────────┘
+make[1]: Leaving directory '/home/runner/workspace/oxalyn'
+make scheduler_verify
+make[1]: Entering directory '/home/runner/workspace/oxalyn'
+cc -I. -std=c99 -O2 -Wall -Wextra -DOXALYN_HOST_TEST \
+	tests/scheduler_verify.c kernel/scheduler.c kernel/gui_guard.c \
+	kernel/hostio.c kernel/kstring.c -o /tmp/oxalyn_scheduler_verify
+/tmp/oxalyn_scheduler_verify
+PASS: scheduler priority, state and context preserve
+make[1]: Leaving directory '/home/runner/workspace/oxalyn'
+make gpu-kernel-test
+make[1]: Entering directory '/home/runner/workspace/oxalyn'
+make -C gravityon lib-gpu
+make[2]: Entering directory '/home/runner/workspace/oxalyn/gravityon'
+make[2]: Nothing to be done for 'lib-gpu'.
+make[2]: Leaving directory '/home/runner/workspace/oxalyn/gravityon'
+cc -I. -std=gnu99 -O2 -Wall -Wextra \
+	tests/gpu_kernel_wire_test.c gravityon/libgravityon_gpu.a -lm \
+	-o /tmp/oxalyn_gpu_kernel_wire_test
+In file included from tests/../gravityon/gpu/gpu_sim.h:14,
+                 from tests/gpu_kernel_wire_test.c:9:
+tests/../gravityon/gpu/gpu_cmd.h: In function ‘gpu_ring_write’:
+tests/../gravityon/gpu/gpu_cmd.h:240:14: warning: unused variable ‘dst’ [-Wunused-variable]
+  240 |     uint8_t* dst;
+      |              ^~~
+/tmp/oxalyn_gpu_kernel_wire_test
+[GPUSim] Başlatıldı — VRAM: 64 MB
+[OK] kernel GUI wire protocol → Gravityon framebuffer
+make[1]: Leaving directory '/home/runner/workspace/oxalyn'
+cc: /tmp/tmp.AnerRgbNCM/smoke.c → /tmp/tmp.AnerRgbNCM/smoke.asm  (1 etiket üretildi)
+Oxalyn-64 Assembler
+Kaynak: /tmp/tmp.AnerRgbNCM/smoke.asm
+
+==> Geçiş 1: label'lar taranıyor...
+    2 label bulundu:
+      main                 → kelime 0x0006 (byte 0x00030)
+      _L0                  → kelime 0x0012 (byte 0x00090)
+
+==> Geçiş 2: komutlar kodlanıyor...
+    23 komut kodlandı (92 byte).
+
+==> Çıktı yazıldı: /tmp/tmp.AnerRgbNCM/smoke.bin

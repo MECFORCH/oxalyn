@@ -1,0 +1,3 @@
+port[  0] =                   42
+port[  1] =                   11
+[TRAP] MTVEC=0, HALT (cause=10)

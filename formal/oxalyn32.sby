@@ -1,0 +1,25 @@
+# ============================================================
+# oxalyn32.sby — SymbiYosys formal doğrulama konfigürasyonu
+#
+# Çalıştır:
+#   cd oxalyn/formal && sby -f oxalyn32.sby
+#
+# Yosys SAT alternatifi (SymbiYosys gerekmez):
+#   make formal   (Makefile'da tanımlı)
+# ============================================================
+
+[options]
+mode bmc
+depth 30
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal ../cpu.v
+read -formal oxalyn_props.v
+prep -top oxalyn_cpu_formal
+
+[files]
+../cpu.v
+oxalyn_props.v
