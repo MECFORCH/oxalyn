@@ -18,9 +18,6 @@ static int        cmd_head = 0;   /* bir sonraki yazma pozisyonu */
 static GpuSprite    sprites[GPU_MAX_SPRITES];
 static GpuTileStrip tile_strips[GPU_MAX_TILES];
 
-/* ── Yardımcılar ─────────────────────────────────────────────────── */
-static int abs_i(int v) { (void)v; return 0; } /* reserved for future use */
-
 /* ── gpu_cmd_init ─────────────────────────────────────────────────── */
 void gpu_cmd_init(void)
 {

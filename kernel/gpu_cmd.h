@@ -18,12 +18,26 @@
 
 /* ── Sabitler ─────────────────────────────────────────── */
 #define GPU_CMD_QUEUE_SIZE   256    /* maksimum komut sayısı */
+#ifdef OXALYN_GUI_RENDER_BUILD
+/*
+ * The ASCII boot-render image does not load sprite/tile assets.  Keep the
+ * simulator image below the Oxalyn RAM window while preserving the normal
+ * capacities for regular kernel builds.
+ */
+#define GPU_MAX_SPRITES      1
+#define GPU_MAX_TILES        1
+#define GPU_TILE_MAX_COUNT   4
+#define GPU_SPRITE_MAX_W     16
+#define GPU_SPRITE_MAX_H     16
+#else
 #define GPU_MAX_SPRITES      8
 #define GPU_MAX_TILES        16
-#define GPU_TILE_W           8
-#define GPU_TILE_H           8
+#define GPU_TILE_MAX_COUNT   256
 #define GPU_SPRITE_MAX_W     64
 #define GPU_SPRITE_MAX_H     64
+#endif
+#define GPU_TILE_W           8
+#define GPU_TILE_H           8
 
 /* ── Komut türleri ────────────────────────────────────── */
 typedef enum {
@@ -108,7 +122,8 @@ typedef struct {
 
 /* ── Tile şeridi ──────────────────────────────────────── */
 typedef struct {
-    uint32_t pixels[GPU_TILE_W * GPU_TILE_H * 256]; /* maks 256 karo */
+    uint32_t pixels[GPU_TILE_W * GPU_TILE_H * GPU_TILE_MAX_COUNT];
+    /* maks GPU_TILE_MAX_COUNT karo */
     uint8_t  tile_count;
     int      used;
 } GpuTileStrip;

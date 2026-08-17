@@ -3213,19 +3213,41 @@ static void parse_global_decl(const char *name, int decl_ptr)
 
 static void emit_globals(void)
 {
-    int i, j;
+    int i, j, k, zero_run;
     if (nglobals == 0 && nstrings == 0)
         return;
     emit("");
     emit("; cc.c global data (one Oxalyn word per scalar element)");
     for (i = 0; i < nglobals; i++) {
+        /*
+         * In --unit mode, header extern declarations and the later
+         * definition share one symbol table.  Keep only the last data
+         * declaration so the assembler sees one storage label; sym_find()
+         * already resolves references to that final declaration.
+         */
+        for (k = i + 1; k < nglobals; k++)
+            if (strcmp(globals[i].name, globals[k].name) == 0)
+                break;
+        if (k < nglobals)
+            continue;
         emit("%s:", globals[i].name);
+        zero_run = 0;
         for (j = 0; j < globals[i].words; j++) {
+            if (!globals[i].init_label[j] && globals[i].init[j] == 0) {
+                zero_run++;
+                continue;
+            }
+            if (zero_run > 0) {
+                emit("    .zero %d", zero_run);
+                zero_run = 0;
+            }
             if (globals[i].init_label[j])
                 emit("    .word %s", globals[i].init_label[j]);
             else
                 emit("    .word %lld", (long long)globals[i].init[j]);
         }
+        if (zero_run > 0)
+            emit("    .zero %d", zero_run);
     }
     for (i = 0; i < nstrings; i++) {
         emit("%s:", strings[i].label);

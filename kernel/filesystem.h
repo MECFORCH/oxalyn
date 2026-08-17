@@ -3,8 +3,13 @@
 
 #include <stddef.h>
 
+#ifdef OXALYN_GUI_RENDER_BUILD
+#define MAX_FILES      8
+#define MAX_FILE_SIZE  256
+#else
 #define MAX_FILES      32
 #define MAX_FILE_SIZE  4096
+#endif
 
 /* Freestanding kernel -> no libc <errno.h>; small local error codes */
 #define FS_ENOSPC  (-1)

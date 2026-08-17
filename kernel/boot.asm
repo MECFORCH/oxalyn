@@ -1,4 +1,4 @@
 .text
 _boot:
-    LI   R31, 0x0FFF
+    LI   R30, 1023        # Stack pointer (R30!)
     JMP  kernel_main
