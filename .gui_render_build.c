@@ -1,0 +1,1 @@
+#define OXALYN_GUI_RENDER_BUILD 1

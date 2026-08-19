@@ -135,9 +135,35 @@ static int32_t label_find(const char *name)
     return -1;
 }
 
+static int32_t label_find_alias(const char *name)
+{
+    int32_t address = label_find(name);
+
+    if (address >= 0) return address;
+
+    /*
+     * The freestanding kernel preprocessor preserves a few object-like
+     * macro names as call targets.  Resolve those ABI aliases here instead
+     * of linking them to address zero.
+     */
+    if (!strcmp(name, "MMIO_READ"))
+        return label_find("mmio_read");
+    if (!strcmp(name, "MMIO_WRITE"))
+        return label_find("mmio_write");
+    if (!strcmp(name, "printf") || !strcmp(name, "KPRINT"))
+        return label_find("kprintf");
+    if (!strcmp(name, "KGETCHAR"))
+        return label_find("uart_getchar");
+    if (!strcmp(name, "KPUTCHAR"))
+        return label_find("uart_putchar");
+    if (!strcmp(name, "MEMORY_BARRIER"))
+        return label_find("MEMORY_BARRIER");
+    return -1;
+}
+
 static int resolve_label_address(const char *token, int pass, int line_no)
 {
-    int32_t address = label_find(token);
+    int32_t address = label_find_alias(token);
 
     if (address < 0) {
         if (pass == 2) {
@@ -688,40 +714,39 @@ static int process_line(const char *raw, int line_no,
             insn = encode(OP_ESTORE, (uint32_t)rs1, (uint32_t)rs2, 0, imm);
 
         } else if (strcmp(tok, "LI") == 0) {
+            char value_token[MAX_LABEL_LEN];
+            int64_t value;
+            int value_is_label = 0;
+
             REQ_REG(rd);
-            REQ_IMM_OR_LABEL(imm, 0);
+            if (!next_token(&p, value_token, (int)sizeof(value_token))) {
+                asm_error(line_no, "Immediate veya label bekleniyor");
+                return 0;
+            }
+
             /*
-             * YENİ: LI 32-bit immediate'leri split et
-             * Büyük değerler: upper (16-bit) load + SHL 16 + lower (16-bit) add
+             * LI is also emitted by cc.c for function/data addresses.  Those
+             * addresses quickly exceed the ISA's signed 11-bit field, so a
+             * one-word encoding silently truncates them and sends JALR/LOAD
+             * to the wrong place.  Reserve the fixed two-byte MOVI form for
+             * labels in both assembler passes; this keeps later label
+             * addresses identical after the expansion.
              */
-            if (imm >= -65536 && imm <= 65535) {
-                /* 17-bit range: normal encode */
-                if (imm >= 0 && imm <= 2047) {
-                    if (imm > 1023) imm -= 2048;
-                } else if (!check_imm11(imm, line_no)) {
+            if (!parse_number64(value_token, &value)) {
+                value_is_label = 1;
+                value = resolve_label_address(value_token, pass, line_no);
+                if (value < 0) return 0;
+            }
+
+            if (value_is_label || value < -1024 || value > 1023) {
+                unsigned bytes = value_is_label ? 2u : movi_bytes(value);
+                direct_words = movi_words(bytes);
+                if (!emit_movi_words(rd, value, bytes, pass, line_no))
                     return 0;
-                }
-                insn = encode(OP_LI, (uint32_t)rd, 0, 0, imm);
             } else {
-                /* 32-bit split: LI rd, upper; SHL rd, rd, 16; LI tmp, lower; ADD rd, rd, tmp */
-                int32_t upper = (imm >> 16) & 0xFFFF;
-                int32_t lower = imm & 0xFFFF;
-                if (lower > 32767) lower -= 65536;
-                
-                insn = encode(OP_LI, (uint32_t)rd, 0, 0, upper);
-                insn_buf[insn_count++] = insn;
-                
-                insn = encode(OP_SHL, (uint32_t)rd, (uint32_t)rd, 0, 16);
-                insn_buf[insn_count++] = insn;
-                
-                insn = encode(OP_LI, 28, 0, 0, lower);  /* temp R28 */
-                insn_buf[insn_count++] = insn;
-                
-                insn = encode(OP_ADD, (uint32_t)rd, (uint32_t)rd, 28, 0);
-                insn_buf[insn_count++] = insn;
-                
-                insn_count--;  /* son instruction zaten count edileceği için */
-                insn = encode(OP_ADD, (uint32_t)rd, (uint32_t)rd, 28, 0);
+                if (!check_imm11((int32_t)value, line_no))
+                    return 0;
+                insn = encode(OP_LI, (uint32_t)rd, 0, 0, (int32_t)value);
             }
 
         } else if (strcmp(tok, "JMP") == 0) {
